@@ -2,6 +2,15 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.datasets.fashion_mnist import load_data
 
+# Setting up callbacks to stop training if accuracy crosses 80%
+class myCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs={}):
+        if (logs.get('accuracy') >= 0.8):
+            print("\nReached 80% accuracy so cancelling training!")
+            self.model.stop_training = True
+
+callbacks = myCallback()
+
 # 60k imgs are used to train the model,
 # 10k imgs are used to test the trained model
 # no cross validation set
@@ -33,7 +42,7 @@ test_imgs = test_imgs / 255.0
 model = tf.keras.models.Sequential([
     tf.keras.Input(shape=(28, 28)),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation=tf.nn.relu),
+    tf.keras.layers.Dense(512, activation=tf.nn.relu),
     tf.keras.layers.Dense(10, activation=tf.nn.softmax),
 ])
 
@@ -46,7 +55,7 @@ model.compile(
 )
 
 # Input the training data and mention the number of epochs
-model.fit( train_imgs, train_labels, epochs=5 )
+model.fit( train_imgs, train_labels, epochs=5, callbacks=[callbacks] )
 
 # Test the model on the testing data
 print("\n------- EVALUATION ON TEST SET ---------------\n")
